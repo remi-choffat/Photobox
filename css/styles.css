@@ -84,3 +84,40 @@ a:hover {
     transform: scale(1.02);
     transition: transform 0.3s;
 }
+
+.tag-btn {
+    border-radius: 18px;
+    padding: 4px 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+a.nav:hover {
+    background-color: #f5f5f5;
+}
+
+a.nav {
+    border: 1px solid #ddd;
+    border-radius: 18px;
+    padding: 4px 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.9em;
+    margin-top: 20px;
+    cursor: pointer;
+    color: #1e6c93;
+    background-color: #FCFCFC;
+    transition-duration: 0.2s;
+}
+
+summary:hover {
+    cursor: pointer;
+}
+
+.required::after {
+    content: "*";
+    color: #f42828;
+    margin-left: 5px;
+}

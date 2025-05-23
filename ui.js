@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
-import {WEBETU} from "./config.js";
-import {loadPicture, loadResource} from "./photoloader";
+import {API_ENDPOINT, WEBETU} from "./config.js";
+import {loadAllComments, loadPicture, loadResource} from "./photoloader";
 
 // Enregistrement d'un helper Handlebars pour formater les dates
 Handlebars.registerHelper('formatDate', function (dateString) {
@@ -15,7 +15,7 @@ Handlebars.registerHelper('formatDate', function (dateString) {
 });
 
 // Enregistrement d'un helper Handlebars pour trier les commentaires par date décroissante
-Handlebars.registerHelper('sort-by-date-desc', function(comments) {
+Handlebars.registerHelper('sort-by-date-desc', function (comments) {
     return comments.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
 });
 
@@ -50,12 +50,14 @@ export function displayCategory(category) {
 /**
  * Affiche une liste de commentaires dans la page
  * @param comments L'objet commentaires à afficher
+ * @param idPhoto L'identifiant de la photo associée
  */
-export function displayComments(comments) {
+export function displayComments(comments, idPhoto) {
     const commentsTemplate = document.querySelector('#commentsTemplate').innerHTML;
     const template = Handlebars.compile(commentsTemplate);
     document.querySelector("#les_commentaires").innerHTML = template({
         comments: comments,
+        idPhoto: idPhoto,
     });
 }
 
@@ -79,12 +81,75 @@ export async function displayFullPhoto(photo) {
     }
 
     // Commentaires
-    const comments = await loadResource(photo.links.comments.href);
+    const comments = await loadAllComments(photo.links.comments.href);
     if (comments) {
-        displayComments(comments);
+        console.log(comments);
+        displayComments(comments, photo.photo.id);
     } else {
         document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
     }
+
+    // Gère l'affichage du formulaire de commentaire
+    const form = document.getElementById('commentaires-form');
+    if (!form) return;
+
+    const boutonValider = document.getElementById('btnAjouterCommentaire');
+
+    document.getElementById('btnAfficherForm').onclick = () => {
+        form.style.display = 'block';
+        document.getElementById('btnAfficherForm').style.display = 'none';
+    }
+
+    // A l'envoi du formulaire
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        boutonValider.classList.add('is-loading');
+        boutonValider.setAttribute('disabled', 'disabled');
+
+        // Récupère les valeurs des champs du formulaire
+        const photoId = form.dataset.photoid;
+        const pseudo = document.getElementById('nom').value;
+        const titre = document.getElementById('titre').value;
+        const contenu = document.getElementById('commentaire').value;
+
+        // Vérifie que les champs ne contiennent pas de caractères non valides
+        const regex = /[^\x20-\x7E]/;
+        if (regex.test(pseudo) || regex.test(titre) || regex.test(contenu)) {
+            alert('Un des champs contient un caractère non valide (emoji, caractères spéciaux...)');
+            boutonValider.classList.remove('is-loading');
+            boutonValider.removeAttribute('disabled');
+            return;
+        }
+
+        // Construit le corps de la requête
+        const body = {
+            pseudo: pseudo,
+            titre: titre,
+            content: contenu,
+        };
+
+        // Envoie la requête POST pour ajouter le commentaire
+        const response = await fetch(`${API_ENDPOINT}/${photoId}/comments`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify(body)
+        });
+
+        // Vérifie la réponse
+        if (response.ok) {
+            const photoCourante = await loadPicture(photoId);
+            await displayFullPhoto(photoCourante);
+            alert('Commentaire ajouté !');
+            form.reset();
+        } else {
+            alert('Erreur lors de l\'ajout du commentaire');
+        }
+
+        boutonValider.classList.remove('is-loading');
+        boutonValider.removeAttribute('disabled');
+    });
 }
 
 
@@ -109,6 +174,6 @@ export function openLightbox(photo, onPrev, onNext) {
     document.getElementById('prevLightbox').onclick = onPrev;
     document.getElementById('nextLightbox').onclick = onNext;
 
-    // Fermer la modal si on clique sur le fond
+    // Ferme la fenêtre modale si on clique sur le fond
     lightbox.querySelector('.modal-background').onclick = () => lightbox.classList.remove('is-active');
 }

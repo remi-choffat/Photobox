@@ -49,9 +49,9 @@
 
 <script id="commentsTemplate" type="text/x-handlebars-template">
     <details>
-        <summary><span id="nb_comments">{{comments.count}}</span> commentaire(s)</summary>
+        <summary><span id="nb_comments">{{comments.length}}</span> commentaire(s)</summary>
         <decription>
-            {{#each (sort-by-date-desc comments.comments)}}
+            {{#each (sort-by-date-desc comments)}}
                 <div class="card mb-3 commentaire" id="commentaire-{{this.id}}">
                     <div class="card-body">
                         <h5 class="card-title">
@@ -64,6 +64,37 @@
             {{/each}}
         </decription>
     </details>
+
+    <a id="btnAfficherForm" class="tag-btn nav">Ajouter un commentaire</a>
+    <form id="commentaires-form" style="display: none;" data-photoid="{{idPhoto}}">
+        <br/>
+        <div class="field">
+            <label class="label required" for="nom">Pseudo</label>
+            <div class="control">
+                <input class="input champ-commentaire" type="text" id="nom"
+                       placeholder="Votre pseudo" required>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label required" for="titre">Titre</label>
+            <div class="control">
+                <input class="input champ-commentaire" id="titre"
+                       placeholder="Le titre de votre commentaire" required>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label required" for="commentaire">Commentaire</label>
+            <div class="control">
+                        <textarea class="textarea champ-commentaire" id="commentaire"
+                                  placeholder="Votre commentaire" required></textarea>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <button class="button is-info" id="btnAjouterCommentaire">Ajouter</button>
+            </div>
+        </div>
+    </form>
 </script>
 
 <script id="galleryTemplate" type="text/x-handlebars-template">

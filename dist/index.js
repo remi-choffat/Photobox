@@ -90,6 +90,23 @@
       console.error("Erreur lors du chargement de la ressource :", error);
     });
   }
+  function loadAllComments(url) {
+    return __async(this, null, function* () {
+      let all = [];
+      let page = yield loadResource(url);
+      while (page) {
+        all = all.concat(page.comments || []);
+        if (page.links && page.links.next && page.links.next.href && page.links.next.href !== "" && page.links.next.href.split("?")[0] !== url) {
+          console.log("next", page.links.next.href);
+          console.log("url", url);
+          page = yield loadResource(page.links.next.href);
+        } else {
+          break;
+        }
+      }
+      return all;
+    });
+  }
   var init_photoloader = __esm({
     "photoloader.js"() {
       init_config();
@@ -5802,11 +5819,12 @@
       category
     });
   }
-  function displayComments(comments) {
+  function displayComments(comments, idPhoto) {
     const commentsTemplate = document.querySelector("#commentsTemplate").innerHTML;
     const template = import_handlebars.default.compile(commentsTemplate);
     document.querySelector("#les_commentaires").innerHTML = template({
-      comments
+      comments,
+      idPhoto
     });
   }
   function displayFullPhoto(photo) {
@@ -5818,12 +5836,58 @@
       } else {
         document.querySelector("#la_categorie").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la cat\xE9gorie</div>";
       }
-      const comments = yield loadResource(photo.links.comments.href);
+      const comments = yield loadAllComments(photo.links.comments.href);
       if (comments) {
-        displayComments(comments);
+        console.log(comments);
+        displayComments(comments, photo.photo.id);
       } else {
         document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
       }
+      const form = document.getElementById("commentaires-form");
+      if (!form)
+        return;
+      const boutonValider = document.getElementById("btnAjouterCommentaire");
+      document.getElementById("btnAfficherForm").onclick = () => {
+        form.style.display = "block";
+        document.getElementById("btnAfficherForm").style.display = "none";
+      };
+      form.addEventListener("submit", (e) => __async(this, null, function* () {
+        e.preventDefault();
+        boutonValider.classList.add("is-loading");
+        boutonValider.setAttribute("disabled", "disabled");
+        const photoId = form.dataset.photoid;
+        const pseudo = document.getElementById("nom").value;
+        const titre = document.getElementById("titre").value;
+        const contenu = document.getElementById("commentaire").value;
+        const regex = /[^\x20-\x7E]/;
+        if (regex.test(pseudo) || regex.test(titre) || regex.test(contenu)) {
+          alert("Un des champs contient un caract\xE8re non valide (emoji, caract\xE8res sp\xE9ciaux...)");
+          boutonValider.classList.remove("is-loading");
+          boutonValider.removeAttribute("disabled");
+          return;
+        }
+        const body = {
+          pseudo,
+          titre,
+          content: contenu
+        };
+        const response = yield fetch(`${API_ENDPOINT}/${photoId}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(body)
+        });
+        if (response.ok) {
+          const photoCourante = yield loadPicture(photoId);
+          yield displayFullPhoto(photoCourante);
+          alert("Commentaire ajout\xE9 !");
+          form.reset();
+        } else {
+          alert("Erreur lors de l'ajout du commentaire");
+        }
+        boutonValider.classList.remove("is-loading");
+        boutonValider.removeAttribute("disabled");
+      }));
     });
   }
   function openLightbox(photo, onPrev, onNext) {
@@ -5894,38 +5958,29 @@
             function show(idx2) {
               return __async(this, null, function* () {
                 const photo = yield loadPicture(photos[idx2].photo.id);
-                openLightbox(
-                  photo,
-                  () => {
-                    if (idx2 > 0)
-                      show(idx2 - 1);
-                    else
-                      show(photos.length - 1);
-                  },
-                  () => {
-                    if (idx2 < photos.length - 1)
-                      show(idx2 + 1);
-                    else
-                      show(0);
-                  }
-                );
-                yield displayFullPhoto(photo);
+                if (photo) {
+                  openLightbox(
+                    photo,
+                    () => {
+                      if (idx2 > 0)
+                        show(idx2 - 1);
+                      else
+                        show(photos.length - 1);
+                    },
+                    () => {
+                      if (idx2 < photos.length - 1)
+                        show(idx2 + 1);
+                      else
+                        show(0);
+                    }
+                  );
+                  yield displayFullPhoto(photo);
+                } else {
+                  document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + photoId + "</div>";
+                }
               });
             }
             yield show(idx);
-          });
-        });
-      });
-      document.querySelectorAll("figure[data-photoid]").forEach((figure) => {
-        figure.addEventListener("click", function() {
-          return __async(this, null, function* () {
-            const photoId = figure.getAttribute("data-photoid");
-            const photo = yield loadPicture(photoId);
-            if (photo) {
-              yield displayFullPhoto(photo);
-            } else {
-              document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + photoId + "</div>";
-            }
           });
         });
       });

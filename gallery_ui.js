@@ -30,32 +30,24 @@ export async function display_gallery(link = PHOTOBOX_URL) {
             async function show(idx) {
                 // Récupère la photo
                 const photo = await loadPicture(photos[idx].photo.id);
-                // Affiche la photo dans la lightbox
-                openLightbox(photo,
-                    () => {
-                        if (idx > 0) show(idx - 1); else show(photos.length - 1);
-                    },
-                    () => {
-                        if (idx < photos.length - 1) show(idx + 1); else show(0);
-                    }
-                );
-                // Affiche la photo dans la page
-                await displayFullPhoto(photo);
+                if (photo) {
+                    // Affiche la photo dans la lightbox
+                    openLightbox(photo,
+                        () => {
+                            if (idx > 0) show(idx - 1); else show(photos.length - 1);
+                        },
+                        () => {
+                            if (idx < photos.length - 1) show(idx + 1); else show(0);
+                        }
+                    );
+                    // Affiche la photo dans la page
+                    await displayFullPhoto(photo);
+                } else {
+                    document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + photoId + "</div>";
+                }
             }
 
             await show(idx);
-        });
-    });
-
-    document.querySelectorAll("figure[data-photoid]").forEach(figure => {
-        figure.addEventListener("click", async function () {
-            const photoId = figure.getAttribute("data-photoid");
-            const photo = await loadPicture(photoId);
-            if (photo) {
-                await displayFullPhoto(photo);
-            } else {
-                document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + photoId + "</div>";
-            }
         });
     });
 

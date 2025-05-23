@@ -47,3 +47,25 @@ export function loadResource(uri) {
             console.error('Erreur lors du chargement de la ressource :', error);
         });
 }
+
+
+/**
+ * Charge tous les commentaires d'une photo à partir de l'API
+ * @param url L'URL de la ressource à charger
+ * @returns {Promise<*[]>} Une promesse qui se résout avec la liste de tous les commentaires
+ */
+export async function loadAllComments(url) {
+    let all = [];
+    let page = await loadResource(url);
+    while (page) {
+        all = all.concat(page.comments || []);
+        if (page.links && page.links.next && page.links.next.href && page.links.next.href !== "" && page.links.next.href.split("?")[0] !== url) {
+            console.log("next", page.links.next.href);
+            console.log("url", url);
+            page = await loadResource(page.links.next.href);
+        } else {
+            break;
+        }
+    }
+    return all;
+}
