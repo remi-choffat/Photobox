@@ -1,9 +1,17 @@
 import Handlebars from 'handlebars';
-import {WEBETU} from "./config";
+import {PHOTOBOX_URL, WEBETU} from "./config";
 import {load} from "./gallery";
+import {loadPicture} from "./photoloader";
+import {displayFullPhoto} from "./ui";
 
-export async function display_gallery(link = "/www/canals5/phox/api/photos") {
-    console.log("Chargement de " + link);
+
+/**
+ * Affiche la galerie de photos
+ * @param link {string} L'URL de la galerie à afficher
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la galerie est affichée
+ */
+export async function display_gallery(link = PHOTOBOX_URL) {
+
     const galerie = await load(link);
     const galleryTemplate = document.querySelector('#galleryTemplate').innerHTML;
     const template = Handlebars.compile(galleryTemplate);
@@ -11,14 +19,20 @@ export async function display_gallery(link = "/www/canals5/phox/api/photos") {
         galerie: galerie,
         basepath: WEBETU.endsWith('/') ? WEBETU : WEBETU + '/',
     });
-    // Définit un handler sur toutes les photos
-    const photos = document.querySelectorAll(".image");
-    photos.forEach(photo => {
-        photo.addEventListener("click", function () {
-            window.location.hash = photo.dataset.photoid;
-            window.location.reload();
+
+    // Ajoute un handler sur chaque vignette (figure)
+    document.querySelectorAll("figure[data-photoid]").forEach(figure => {
+        figure.addEventListener("click", async function () {
+            const photoId = figure.getAttribute("data-photoid");
+            const photo = await loadPicture(photoId);
+            if (photo) {
+                await displayFullPhoto(photo);
+            } else {
+                document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + photoId + "</div>";
+            }
         });
     });
+
     // Définit un handler sur les boutons Précédent et Suivant
     const previous = document.querySelector("#previous");
     const next = document.querySelector("#next");
@@ -34,4 +48,5 @@ export async function display_gallery(link = "/www/canals5/phox/api/photos") {
             display_gallery(link);
         }
     });
+
 }

@@ -1,5 +1,6 @@
 import Handlebars from 'handlebars';
 import {WEBETU} from "./config.js";
+import {loadPicture, loadResource} from "./photoloader";
 
 // Enregistrement d'un helper Handlebars pour formater les dates
 Handlebars.registerHelper('formatDate', function (dateString) {
@@ -56,4 +57,32 @@ export function displayComments(comments) {
     document.querySelector("#les_commentaires").innerHTML = template({
         comments: comments,
     });
+}
+
+
+/**
+ * Affiche la photo complète avec ses commentaires et sa catégorie
+ * @param photo L'objet photo à afficher
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la photo est affichée
+ */
+export async function displayFullPhoto(photo) {
+
+    // Affiche l'image
+    displayPicture(photo);
+
+    // Catégorie
+    const category = await loadResource(photo.links.categorie.href);
+    if (category) {
+        displayCategory(category);
+    } else {
+        document.querySelector("#la_categorie").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la catégorie</div>";
+    }
+
+    // Commentaires
+    const comments = await loadResource(photo.links.comments.href);
+    if (comments) {
+        displayComments(comments);
+    } else {
+        document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
+    }
 }

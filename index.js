@@ -1,5 +1,5 @@
 import {loadPicture, loadResource} from "./photoloader.js";
-import {displayCategory, displayComments, displayPicture} from "./ui.js";
+import {displayFullPhoto} from "./ui.js";
 import {display_gallery} from "./gallery_ui";
 
 (async () => {
@@ -14,25 +14,7 @@ import {display_gallery} from "./gallery_ui";
 
     if (photo) {
         // Si une photo a été chargée, on l'affiche
-        displayPicture(photo);
-        // On charge la catégorie de la photo
-        const category = await getCategorie(photo);
-        if (category) {
-            // Si la catégorie a été chargée, on l'affiche
-            displayCategory(category);
-        } else {
-            // Si la catégorie n'a pas pu être chargée, on affiche un message d'erreur
-            document.querySelector("#la_categorie").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la catégorie</div>";
-        }
-        // On charge les commentaires de la photo
-        const comments = await getComments(photo);
-        if (comments) {
-            // Si les commentaires ont été chargés, on les affiche
-            displayComments(comments);
-        } else {
-            // Si les commentaires n'ont pas pu être chargés, on affiche un message d'erreur
-            document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
-        }
+        await displayFullPhoto(photo);
     } else {
         // Si la photo n'a pas pu être chargée, on affiche un message d'erreur
         document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + idPicture + "</div>";

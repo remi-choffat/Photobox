@@ -49,11 +49,12 @@
   };
 
   // config.js
-  var API_ENDPOINT, WEBETU;
+  var API_ENDPOINT, WEBETU, PHOTOBOX_URL;
   var init_config = __esm({
     "config.js"() {
       API_ENDPOINT = "https://webetu.iutnc.univ-lorraine.fr/www/canals5/phox/api/photos";
       WEBETU = "https://webetu.iutnc.univ-lorraine.fr";
+      PHOTOBOX_URL = "/www/canals5/phox/api/photos";
     }
   });
 
@@ -5808,11 +5809,29 @@
       comments
     });
   }
+  function displayFullPhoto(photo) {
+    return __async(this, null, function* () {
+      displayPicture(photo);
+      const category = yield loadResource(photo.links.categorie.href);
+      if (category) {
+        displayCategory(category);
+      } else {
+        document.querySelector("#la_categorie").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la cat\xE9gorie</div>";
+      }
+      const comments = yield loadResource(photo.links.comments.href);
+      if (comments) {
+        displayComments(comments);
+      } else {
+        document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
+      }
+    });
+  }
   var import_handlebars;
   var init_ui = __esm({
     "ui.js"() {
       import_handlebars = __toESM(require_handlebars());
       init_config();
+      init_photoloader();
       import_handlebars.default.registerHelper("formatDate", function(dateString) {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat("fr-FR", {
@@ -5839,15 +5858,13 @@
   var galerie;
   var init_gallery = __esm({
     "gallery.js"() {
-      init_config();
       init_photoloader();
     }
   });
 
   // gallery_ui.js
-  function display_gallery(link = "/www/canals5/phox/api/photos") {
-    return __async(this, null, function* () {
-      console.log("Chargement de " + link);
+  function display_gallery() {
+    return __async(this, arguments, function* (link = PHOTOBOX_URL) {
       const galerie2 = yield load(link);
       const galleryTemplate = document.querySelector("#galleryTemplate").innerHTML;
       const template = import_handlebars2.default.compile(galleryTemplate);
@@ -5855,11 +5872,17 @@
         galerie: galerie2,
         basepath: WEBETU.endsWith("/") ? WEBETU : WEBETU + "/"
       });
-      const photos = document.querySelectorAll(".image");
-      photos.forEach((photo) => {
-        photo.addEventListener("click", function() {
-          window.location.hash = photo.dataset.photoid;
-          window.location.reload();
+      document.querySelectorAll("figure[data-photoid]").forEach((figure) => {
+        figure.addEventListener("click", function() {
+          return __async(this, null, function* () {
+            const photoId = figure.getAttribute("data-photoid");
+            const photo = yield loadPicture(photoId);
+            if (photo) {
+              yield displayFullPhoto(photo);
+            } else {
+              document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + photoId + "</div>";
+            }
+          });
         });
       });
       const previous = document.querySelector("#previous");
@@ -5884,6 +5907,8 @@
       import_handlebars2 = __toESM(require_handlebars());
       init_config();
       init_gallery();
+      init_photoloader();
+      init_ui();
     }
   });
 
@@ -5899,19 +5924,7 @@
         const photo = yield loadPicture(idPicture);
         yield display_gallery();
         if (photo) {
-          displayPicture(photo);
-          const category = yield getCategorie(photo);
-          if (category) {
-            displayCategory(category);
-          } else {
-            document.querySelector("#la_categorie").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la cat\xE9gorie</div>";
-          }
-          const comments = yield getComments(photo);
-          if (comments) {
-            displayComments(comments);
-          } else {
-            document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
-          }
+          yield displayFullPhoto(photo);
         } else {
           document.querySelector("#la_photo").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement de la photo " + idPicture + "</div>";
         }
