@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="author" content="Rémi Choffat"/>
+    <title>Photobox</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="css/styles.css"/>
+<!--    <link rel="stylesheet" href="https://remi-choffat.fr/css/style.css"/>-->
+    <link rel="icon" href="img/icone_photo.png"/>
+</head>
+
+<body>
+<main class="section" id="photo">
+    <div id="galerie"></div>
+    <hr/>
+    <section class="main" id="la_photo"></section>
+    <br/>
+    <div id="la_categorie"></div>
+    <br/>
+    <div id="les_commentaires"></div>
+</main>
+
+<script id="photoTemplate" type="text/x-handlebars-template">
+    <div class="container">
+        <h2 class="title">Photo {{image.photo.id}}</h2>
+        <br/>
+        <img src="{{img_basepath}}{{image.photo.url.href}}" alt="{{image.photo.titre}}" class="image"/>
+        <br/>
+        <h3 class="subtitle">{{image.photo.titre}}</h3>
+        <p id="image_description">{{image.photo.desc}}</p>
+        <p class="help">Type : {{image.photo.type}} &bull; Dimensions : {{image.photo.width}}
+            x {{image.photo.height}}</p>
+    </div>
+</script>
+
+<script id="categoryTemplate" type="text/x-handlebars-template">
+    <p>Catégorie : <strong>{{category.categorie.nom}}</strong></p>
+</script>
+
+<script id="commentsTemplate" type="text/x-handlebars-template">
+    <details>
+        <summary><span id="nb_comments">{{comments.count}}</span> commentaire(s)</summary>
+        <decription>
+            {{#each (sort-by-date-desc comments.comments)}}
+                <div class="card mb-3 commentaire" id="commentaire-{{this.id}}">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{this.pseudo}} <small class="date-commentaire text-muted">{{formatDate this.date}}</small>
+                        </h5>
+                        <h3><strong>{{this.titre}}</strong></h3>
+                        <blockquote class="contenu-commentaire card-text">{{{this.content}}}</blockquote>
+                    </div>
+                </div>
+            {{/each}}
+        </decription>
+    </details>
+</script>
+
+<script id="galleryTemplate" type="text/x-handlebars-template">
+    <h2 class="title">Galerie de photos</h2>
+    <div class="gallery">
+        <div class="columns is-multiline">
+            {{#each galerie.photos}}
+                <div class="column is-one-quarter">
+                    <div class="card mb-3">
+                        <div class="card-image">
+                            <figure class="image is-4by3" title="{{this.photo.titre}}" data-photoid="{{this.photo.id}}">
+                                <img src="{{../basepath}}{{this.photo.thumbnail.href}}" alt="{{this.photo.titre}}">
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+        <div class="buttons" style="justify-content: space-between;">
+            {{#if galerie.links.prev.href}}
+                <button class="button is-primary" id="previous" data-liengalerie="{{galerie.links.prev.href}}">
+                    Précédent
+                </button>
+            {{/if}}
+            {{#if galerie.links.next.href}}
+                <button class="button is-primary" id="next" data-liengalerie="{{galerie.links.next.href}}">Suivant
+                </button>
+            {{/if}}
+        </div>
+    </div>
+</script>
+
+
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script type="module" src="dist/index.js" defer></script>
+</body>
+</html>
