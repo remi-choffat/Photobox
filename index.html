@@ -20,6 +20,16 @@
     <div id="les_commentaires"></div>
 </main>
 
+<div id="lightbox" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content" style="display:flex;justify-content:center;align-items:center;">
+        <img id="lightboxImage" style="box-shadow:0 0 30px #000;border-radius:8px;">
+    </div>
+    <button class="modal-close is-large" id="closeLightbox" aria-label="close"></button>
+    <button class="button is-medium" id="prevLightbox" style="position:absolute;left:30px;top:50%;">&#8592;</button>
+    <button class="button is-medium" id="nextLightbox" style="position:absolute;right:30px;top:50%;">&#8594;</button>
+</div>
+
 <script id="photoTemplate" type="text/x-handlebars-template">
     <div class="container">
         <h2 class="title">Photo {{image.photo.id}}</h2>

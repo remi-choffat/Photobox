@@ -5826,6 +5826,19 @@
       }
     });
   }
+  function openLightbox(photo, onPrev, onNext) {
+    const lightbox = document.getElementById("lightbox");
+    const img = document.getElementById("lightboxImage");
+    img.src = `${WEBETU}/${photo.photo.url.href}`;
+    img.alt = photo.photo.titre;
+    lightbox.classList.add("is-active");
+    img.style.maxWidth = "100%";
+    img.style.maxHeight = "100%";
+    document.getElementById("closeLightbox").onclick = () => lightbox.classList.remove("is-active");
+    document.getElementById("prevLightbox").onclick = onPrev;
+    document.getElementById("nextLightbox").onclick = onNext;
+    lightbox.querySelector(".modal-background").onclick = () => lightbox.classList.remove("is-active");
+  }
   var import_handlebars;
   var init_ui = __esm({
     "ui.js"() {
@@ -5871,6 +5884,37 @@
       document.querySelector("#galerie").innerHTML = template({
         galerie: galerie2,
         basepath: WEBETU.endsWith("/") ? WEBETU : WEBETU + "/"
+      });
+      document.querySelectorAll("figure[data-photoid]").forEach((figure) => {
+        figure.addEventListener("click", function() {
+          return __async(this, null, function* () {
+            const photoId = parseInt(figure.getAttribute("data-photoid"));
+            const photos = galerie2.photos;
+            let idx = photos.findIndex((p) => p.photo.id === photoId);
+            function show(idx2) {
+              return __async(this, null, function* () {
+                const photo = yield loadPicture(photos[idx2].photo.id);
+                openLightbox(
+                  photo,
+                  () => {
+                    if (idx2 > 0)
+                      show(idx2 - 1);
+                    else
+                      show(photos.length - 1);
+                  },
+                  () => {
+                    if (idx2 < photos.length - 1)
+                      show(idx2 + 1);
+                    else
+                      show(0);
+                  }
+                );
+                yield displayFullPhoto(photo);
+              });
+            }
+            yield show(idx);
+          });
+        });
       });
       document.querySelectorAll("figure[data-photoid]").forEach((figure) => {
         figure.addEventListener("click", function() {

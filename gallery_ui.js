@@ -2,7 +2,7 @@ import Handlebars from 'handlebars';
 import {PHOTOBOX_URL, WEBETU} from "./config";
 import {load} from "./gallery";
 import {loadPicture} from "./photoloader";
-import {displayFullPhoto} from "./ui";
+import {displayFullPhoto, openLightbox} from "./ui";
 
 
 /**
@@ -21,6 +21,32 @@ export async function display_gallery(link = PHOTOBOX_URL) {
     });
 
     // Ajoute un handler sur chaque vignette (figure)
+    document.querySelectorAll("figure[data-photoid]").forEach(figure => {
+        figure.addEventListener("click", async function () {
+            const photoId = parseInt(figure.getAttribute("data-photoid"));
+            const photos = galerie.photos;
+            let idx = photos.findIndex(p => p.photo.id === photoId);
+
+            async function show(idx) {
+                // Récupère la photo
+                const photo = await loadPicture(photos[idx].photo.id);
+                // Affiche la photo dans la lightbox
+                openLightbox(photo,
+                    () => {
+                        if (idx > 0) show(idx - 1); else show(photos.length - 1);
+                    },
+                    () => {
+                        if (idx < photos.length - 1) show(idx + 1); else show(0);
+                    }
+                );
+                // Affiche la photo dans la page
+                await displayFullPhoto(photo);
+            }
+
+            await show(idx);
+        });
+    });
+
     document.querySelectorAll("figure[data-photoid]").forEach(figure => {
         figure.addEventListener("click", async function () {
             const photoId = figure.getAttribute("data-photoid");

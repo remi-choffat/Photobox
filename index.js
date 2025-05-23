@@ -41,5 +41,3 @@ import {display_gallery} from "./gallery_ui";
     }
 
 })();
-
-// Galerie de photo : si on est à la photo 1 et qu'on fait précédent, doit afficher la dernière photo. Pareil pour la dernière qui va à la première

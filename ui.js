@@ -86,3 +86,29 @@ export async function displayFullPhoto(photo) {
         document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
     }
 }
+
+
+/**
+ * Affiche la lightbox avec la photo sélectionnée
+ * @param photo L'objet photo à afficher
+ * @param onPrev Action à exécuter lorsque l'utilisateur clique sur le bouton Précédent
+ * @param onNext Action à exécuter lorsque l'utilisateur clique sur le bouton Suivant
+ */
+export function openLightbox(photo, onPrev, onNext) {
+    const lightbox = document.getElementById('lightbox');
+    const img = document.getElementById('lightboxImage');
+    img.src = `${WEBETU}/${photo.photo.url.href}`;
+    img.alt = photo.photo.titre;
+
+    lightbox.classList.add('is-active')
+
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+
+    document.getElementById('closeLightbox').onclick = () => lightbox.classList.remove('is-active');
+    document.getElementById('prevLightbox').onclick = onPrev;
+    document.getElementById('nextLightbox').onclick = onNext;
+
+    // Fermer la modal si on clique sur le fond
+    lightbox.querySelector('.modal-background').onclick = () => lightbox.classList.remove('is-active');
+}
