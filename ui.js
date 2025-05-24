@@ -83,7 +83,6 @@ export async function displayFullPhoto(photo) {
     // Commentaires
     const comments = await loadAllComments(photo.links.comments.href);
     if (comments) {
-        console.log(comments);
         displayComments(comments, photo.photo.id);
     } else {
         document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
@@ -100,7 +99,7 @@ export async function displayFullPhoto(photo) {
         document.getElementById('btnAfficherForm').style.display = 'none';
     }
 
-    // A l'envoi du formulaire
+    // À l'envoi du formulaire
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 

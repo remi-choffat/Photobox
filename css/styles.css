@@ -1,6 +1,11 @@
 img {
-    max-width: 30rem;
     height: auto;
+}
+
+@media (min-width: 768px) {
+    img {
+        max-width: 35rem;
+    }
 }
 
 h2 {

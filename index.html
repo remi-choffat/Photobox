@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="noindex"/>
     <meta name="author" content="Rémi Choffat"/>
     <title>Photobox</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
@@ -10,7 +12,13 @@
 </head>
 
 <body>
+
+<!-- Section principale -->
 <main class="section" id="photo">
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <h1 class="title is-2">Photobox</h1>
+    </div>
+    <hr/>
     <div id="galerie"></div>
     <hr/>
     <section class="main" id="la_photo"></section>
@@ -20,16 +28,18 @@
     <div id="les_commentaires"></div>
 </main>
 
+<!-- Lightbox (fenêtre modale) pour afficher les images en grand -->
 <div id="lightbox" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content" style="display:flex;justify-content:center;align-items:center;">
-        <img id="lightboxImage" style="box-shadow:0 0 30px #000;border-radius:8px;">
+        <img id="lightboxImage" style="box-shadow:0 0 30px #000; border-radius:8px;" alt="Lightbox Image"/>
     </div>
     <button class="modal-close is-large" id="closeLightbox" aria-label="close"></button>
     <button class="button is-medium" id="prevLightbox" style="position:absolute;left:30px;top:50%;">&#8592;</button>
     <button class="button is-medium" id="nextLightbox" style="position:absolute;right:30px;top:50%;">&#8594;</button>
 </div>
 
+<!-- Handlebars templates -->
 <script id="photoTemplate" type="text/x-handlebars-template">
     <div class="container">
         <h2 class="title">Photo {{image.photo.id}}</h2>
@@ -44,57 +54,62 @@
 </script>
 
 <script id="categoryTemplate" type="text/x-handlebars-template">
-    <p>Catégorie : <strong>{{category.categorie.nom}}</strong></p>
+    <div class="container">
+        <p>Catégorie : <strong>{{category.categorie.nom}}</strong></p>
+    </div>
 </script>
 
 <script id="commentsTemplate" type="text/x-handlebars-template">
-    <details>
-        <summary><span id="nb_comments">{{comments.length}}</span> commentaire(s)</summary>
-        <decription>
-            {{#each (sort-by-date-desc comments)}}
-                <div class="card mb-3 commentaire" id="commentaire-{{this.id}}">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{this.pseudo}} <small class="date-commentaire text-muted">{{formatDate this.date}}</small>
-                        </h5>
-                        <h3><strong>{{this.titre}}</strong></h3>
-                        <blockquote class="contenu-commentaire card-text">{{{this.content}}}</blockquote>
+    <div class="container">
+        <details>
+            <summary><span id="nb_comments">{{comments.length}}</span> commentaire(s)</summary>
+            <decription>
+                {{#each (sort-by-date-desc comments)}}
+                    <div class="card mb-3 commentaire" id="commentaire-{{this.id}}">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{this.pseudo}} <small class="date-commentaire text-muted">{{formatDate
+                                    this.date}}</small>
+                            </h5>
+                            <h3><strong>{{this.titre}}</strong></h3>
+                            <blockquote class="contenu-commentaire card-text">{{{this.content}}}</blockquote>
+                        </div>
                     </div>
-                </div>
-            {{/each}}
-        </decription>
-    </details>
+                {{/each}}
+            </decription>
+        </details>
 
-    <a id="btnAfficherForm" class="tag-btn nav">Ajouter un commentaire</a>
-    <form id="commentaires-form" style="display: none;" data-photoid="{{idPhoto}}">
-        <br/>
-        <div class="field">
-            <label class="label required" for="nom">Pseudo</label>
-            <div class="control">
-                <input class="input champ-commentaire" type="text" id="nom"
-                       placeholder="Votre pseudo" required>
+        <a id="btnAfficherForm" class="tag-btn nav">Ajouter un commentaire</a>
+        <form id="commentaires-form" style="display: none;" data-photoid="{{idPhoto}}">
+            <br/>
+            <div class="field">
+                <label class="label required" for="nom">Pseudo</label>
+                <div class="control">
+                    <input class="input champ-commentaire" type="text" id="nom"
+                           placeholder="Votre pseudo" required>
+                </div>
             </div>
-        </div>
-        <div class="field">
-            <label class="label required" for="titre">Titre</label>
-            <div class="control">
-                <input class="input champ-commentaire" id="titre"
-                       placeholder="Le titre de votre commentaire" required>
+            <div class="field">
+                <label class="label required" for="titre">Titre</label>
+                <div class="control">
+                    <input class="input champ-commentaire" id="titre"
+                           placeholder="Le titre de votre commentaire" required>
+                </div>
             </div>
-        </div>
-        <div class="field">
-            <label class="label required" for="commentaire">Commentaire</label>
-            <div class="control">
+            <div class="field">
+                <label class="label required" for="commentaire">Commentaire</label>
+                <div class="control">
                         <textarea class="textarea champ-commentaire" id="commentaire"
                                   placeholder="Votre commentaire" required></textarea>
+                </div>
             </div>
-        </div>
-        <div class="field">
-            <div class="control">
-                <button class="button is-info" id="btnAjouterCommentaire">Ajouter</button>
+            <div class="field">
+                <div class="control">
+                    <button class="button is-info" id="btnAjouterCommentaire">Ajouter</button>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </script>
 
 <script id="galleryTemplate" type="text/x-handlebars-template">
@@ -130,5 +145,6 @@
 
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 <script type="module" src="dist/index.js" defer></script>
+
 </body>
 </html>

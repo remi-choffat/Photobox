@@ -60,8 +60,6 @@ export async function loadAllComments(url) {
     while (page) {
         all = all.concat(page.comments || []);
         if (page.links && page.links.next && page.links.next.href && page.links.next.href !== "" && page.links.next.href.split("?")[0] !== url) {
-            console.log("next", page.links.next.href);
-            console.log("url", url);
             page = await loadResource(page.links.next.href);
         } else {
             break;

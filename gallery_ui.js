@@ -10,7 +10,7 @@ import {displayFullPhoto, openLightbox} from "./ui";
  * @param link {string} L'URL de la galerie à afficher
  * @returns {Promise<void>} Une promesse qui se résout lorsque la galerie est affichée
  */
-export async function display_gallery(link = PHOTOBOX_URL) {
+export async function display_gallery(link = PHOTOBOX_URL + "/?page=1&size=10") {
 
     const galerie = await load(link);
     const galleryTemplate = document.querySelector('#galleryTemplate').innerHTML;
@@ -54,6 +54,12 @@ export async function display_gallery(link = PHOTOBOX_URL) {
     // Définit un handler sur les boutons Précédent et Suivant
     const previous = document.querySelector("#previous");
     const next = document.querySelector("#next");
+    if (!previous.dataset.liengalerie || previous.dataset.liengalerie === link) {
+        previous.style.visibility = "hidden";
+    }
+    if (!next.dataset.liengalerie || next.dataset.liengalerie === link) {
+        next.style.visibility = "hidden";
+    }
     previous.addEventListener("click", function () {
         const link = previous.dataset.liengalerie;
         if (link) {

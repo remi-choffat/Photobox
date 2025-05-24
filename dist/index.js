@@ -49,12 +49,12 @@
   };
 
   // config.js
-  var API_ENDPOINT, WEBETU, PHOTOBOX_URL;
+  var WEBETU, PHOTOBOX_URL, API_ENDPOINT;
   var init_config = __esm({
     "config.js"() {
-      API_ENDPOINT = "https://webetu.iutnc.univ-lorraine.fr/www/canals5/phox/api/photos";
       WEBETU = "https://webetu.iutnc.univ-lorraine.fr";
       PHOTOBOX_URL = "/www/canals5/phox/api/photos";
+      API_ENDPOINT = WEBETU + PHOTOBOX_URL;
     }
   });
 
@@ -97,8 +97,6 @@
       while (page) {
         all = all.concat(page.comments || []);
         if (page.links && page.links.next && page.links.next.href && page.links.next.href !== "" && page.links.next.href.split("?")[0] !== url) {
-          console.log("next", page.links.next.href);
-          console.log("url", url);
           page = yield loadResource(page.links.next.href);
         } else {
           break;
@@ -5838,7 +5836,6 @@
       }
       const comments = yield loadAllComments(photo.links.comments.href);
       if (comments) {
-        console.log(comments);
         displayComments(comments, photo.photo.id);
       } else {
         document.querySelector("#les_commentaires").innerHTML = "<div class='notification is-danger'>Erreur lors du chargement des commentaires</div>";
@@ -5941,7 +5938,7 @@
 
   // gallery_ui.js
   function display_gallery() {
-    return __async(this, arguments, function* (link = PHOTOBOX_URL) {
+    return __async(this, arguments, function* (link = PHOTOBOX_URL + "/?page=1&size=10") {
       const galerie2 = yield load(link);
       const galleryTemplate = document.querySelector("#galleryTemplate").innerHTML;
       const template = import_handlebars2.default.compile(galleryTemplate);
@@ -5986,6 +5983,12 @@
       });
       const previous = document.querySelector("#previous");
       const next = document.querySelector("#next");
+      if (!previous.dataset.liengalerie || previous.dataset.liengalerie === link) {
+        previous.style.visibility = "hidden";
+      }
+      if (!next.dataset.liengalerie || next.dataset.liengalerie === link) {
+        next.style.visibility = "hidden";
+      }
       previous.addEventListener("click", function() {
         const link2 = previous.dataset.liengalerie;
         if (link2) {
